@@ -17,6 +17,12 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             <Link className="text-muted text-sm font-medium" href="/">
               Feed
             </Link>
+            <Link
+              className="bg-foreground text-surface rounded-md px-3 py-2 text-sm font-semibold"
+              href="/posts/new"
+            >
+              New post
+            </Link>
           </nav>
         </div>
       </header>
