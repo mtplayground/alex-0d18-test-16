@@ -53,6 +53,22 @@ const storageEnvSchema = envSchema.pick({
 export type AppEnv = z.infer<typeof envSchema>;
 export type StorageEnv = z.infer<typeof storageEnvSchema>;
 
+function normalizePostgresUrl(value: string) {
+  const url = new URL(value);
+  const sslMode = url.searchParams.get("sslmode");
+  const libpqSslModes = new Set(["prefer", "require", "verify-ca"]);
+
+  if (
+    sslMode &&
+    libpqSslModes.has(sslMode) &&
+    !url.searchParams.has("uselibpqcompat")
+  ) {
+    url.searchParams.set("uselibpqcompat", "true");
+  }
+
+  return url.toString();
+}
+
 function formatEnvError(error: z.ZodError) {
   return error.issues
     .map((issue) => `${issue.path.join(".") || "env"}: ${issue.message}`)
@@ -80,7 +96,7 @@ export function getDatabaseUrl(source: NodeJS.ProcessEnv = process.env) {
     );
   }
 
-  return parsed.data.DATABASE_URL;
+  return normalizePostgresUrl(parsed.data.DATABASE_URL);
 }
 
 export function getAuthSecret(source: NodeJS.ProcessEnv = process.env) {
