@@ -36,6 +36,10 @@ const databaseEnvSchema = envSchema.pick({
   DATABASE_URL: true,
 });
 
+const authEnvSchema = envSchema.pick({
+  AUTH_SECRET: true,
+});
+
 export type AppEnv = z.infer<typeof envSchema>;
 
 function formatEnvError(error: z.ZodError) {
@@ -66,4 +70,16 @@ export function getDatabaseUrl(source: NodeJS.ProcessEnv = process.env) {
   }
 
   return parsed.data.DATABASE_URL;
+}
+
+export function getAuthSecret(source: NodeJS.ProcessEnv = process.env) {
+  const parsed = authEnvSchema.safeParse(source);
+
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid auth configuration: ${formatEnvError(parsed.error)}`
+    );
+  }
+
+  return parsed.data.AUTH_SECRET;
 }
