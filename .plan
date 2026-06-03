@@ -1,0 +1,62 @@
+Architecture plan for mtplayground/alex-0d18-test-16
+
+Scope
+- Build a Next.js App Router application in TypeScript with Tailwind, Prisma/PostgreSQL, Auth.js credentials authentication, object storage backed attachments, posts, replies, profiles, metadata, tests, and self-hosted deployment prep.
+- No product brand is defined in the current checkout or issue titles. Do not introduce a synthetic brand name; use values from PRODUCT.md if it is added later.
+
+Module structure and file organization
+- app/
+  - layout.tsx, globals.css, loading.tsx, error.tsx, not-found.tsx for app-wide shell, metadata defaults, and boundaries.
+  - (public)/sign-in/page.tsx and (public)/sign-up/page.tsx for unauthenticated routes.
+  - (app)/page.tsx for the paginated post feed, (app)/posts/new/page.tsx for creation, (app)/posts/[id]/page.tsx for detail and replies, and (app)/users/[id]/page.tsx plus edit profile routes.
+  - api/upload/route.ts for validated upload handling.
+  - sitemap.ts and robots.ts for discoverability.
+- components/
+  - ui/ for small reusable primitives.
+  - auth/ for sign-in and sign-up forms.
+  - uploads/ for upload widgets, attachment previews, and avatar controls.
+  - posts/ for feed items, post forms, pagination, and detail rendering.
+  - replies/ for reply list and reply form.
+  - profile/ for profile display and edit form.
+- lib/
+  - prisma.ts for the Prisma singleton.
+  - auth.ts and password.ts for Auth.js configuration and password hashing.
+  - env.ts for typed environment validation.
+  - storage.ts for object storage operations.
+  - validations/ for Zod schemas shared by actions, routes, and forms.
+  - metadata.ts and json-ld.ts for Open Graph, page metadata, and structured data helpers.
+- actions/
+  - auth.ts, posts.ts, replies.ts, profile.ts, uploads.ts for server actions with schema validation and authorization checks.
+- prisma/
+  - schema.prisma and migrations for User, Attachment, Post, and Reply.
+- tests/
+  - unit/ for auth, validation, server actions, storage behavior, and data access.
+  - e2e/ for the core sign-up, sign-in, upload, post, reply, and profile flow.
+
+Shared types and data model
+- Prefer Prisma-generated types for database entities and derive form/input types from Zod schemas to avoid duplicate contracts.
+- User: id, name, email, passwordHash, image/avatar fields, timestamps, posts, replies.
+- Attachment: id, ownerId, storageKey, url, filename, contentType, size, createdAt, optional postId/replyId/avatar usage depending on later issue scope.
+- Post: id, authorId, title/body or content as specified by issue implementation, attachments, replies, timestamps.
+- Reply: id, postId, authorId, content, timestamps.
+- Use stable public route params based on ids unless a later issue explicitly requires slugs.
+
+Issue dependencies
+- Foundation: #1 creates the Next.js TypeScript App Router project; #2 adds Tailwind/lint/format; #3 adds Prisma/PostgreSQL migrations; #4 defines env handling.
+- App shell: #5 depends on #1 and should establish route groups, metadata defaults, loading, and error boundaries before feature pages.
+- Authentication: #6 User model enables #7 Auth.js credentials and hashing; #8 and #9 build sign-up/sign-in; #10 protects authenticated routes.
+- Uploads: #11 Attachment model enables #12 storage client; #13 upload API validates and persists uploads; #14 wraps it in reusable UI.
+- Posts: #15 Post model enables #16 create-post action with attachments, #17 feed, #18 detail, and #19 create-post form.
+- Replies: #20 Reply model enables #21 create-reply action, #22 SSR reply list, and #23 reply form.
+- Profiles: #24 profile page builds on User/Post/Reply data; #25 avatar upload depends on storage and attachment patterns; #26 edit-profile form ties profile fields and avatar together.
+- SEO and metadata: #27 per-page metadata builds on page routes; #28 sitemap/robots depends on stable routes; #29 JSON-LD depends on post detail data.
+- Verification and hardening: #30 unit tests cover core modules; #31 e2e validates the user flow; #32 reviews errors, env validation, and self-hosted deployment readiness.
+
+Key design decisions
+- Use server components for SSR data reads and client components only for interactive forms, upload controls, and progressive UI state.
+- Keep mutations in server actions when they affect app state, and reserve API routes for upload transport or integration endpoints that need request streaming/form-data handling.
+- Validate all external input with Zod at the route/action boundary and return small typed error objects for form rendering.
+- Keep authorization checks close to mutations and protected data reads; middleware should only gate broad route access.
+- Store uploaded objects through a storage abstraction so local/S3-compatible providers can be swapped by environment configuration.
+- Use Prisma migrations as the source of truth for schema evolution; each model issue should include a migration and minimal seed-safe defaults.
+- Add tests as the surface area grows: unit tests for pure validation/auth/storage helpers first, then action tests with mocked session/storage/database boundaries, then Playwright for the core flow.
