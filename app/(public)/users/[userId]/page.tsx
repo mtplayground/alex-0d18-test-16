@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,24 @@ function getInitials(displayName: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+async function getUserProfileMetadata(userId: string) {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      displayName: true,
+      avatarUrl: true,
+      _count: {
+        select: {
+          posts: true,
+        },
+      },
+    },
+  });
 }
 
 async function getUserProfile(userId: string) {
@@ -80,6 +99,59 @@ async function getUserProfile(userId: string) {
       },
     },
   });
+}
+
+export async function generateMetadata({
+  params,
+}: UserProfilePageProps): Promise<Metadata> {
+  const { userId } = await params;
+  const user = await getUserProfileMetadata(userId);
+
+  if (!user) {
+    return {
+      title: "Profile not found",
+      description: "The requested profile could not be found.",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const title = user.displayName;
+  const description = `${user.displayName}'s profile and ${user._count.posts} ${
+    user._count.posts === 1 ? "post" : "posts"
+  }.`;
+  const url = `/users/${user.id}`;
+  const images = user.avatarUrl
+    ? [
+        {
+          url: user.avatarUrl,
+          alt: `${user.displayName} avatar`,
+        },
+      ]
+    : undefined;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      url,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title,
+      description,
+      images,
+    },
+  };
 }
 
 function ProfileAvatar({
