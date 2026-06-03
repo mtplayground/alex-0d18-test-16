@@ -18,3 +18,16 @@ model User {
 
   @@map("users")
 }
+
+model Attachment {
+  id          String   @id @default(cuid())
+  fileName    String
+  contentType String
+  sizeBytes   Int
+  storageKey  String   @unique
+  postId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([postId])
+  @@map("attachments")
+}
