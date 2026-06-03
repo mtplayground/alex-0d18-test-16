@@ -79,6 +79,7 @@ async function getFeedPosts(requestedPage: number) {
             createdAt: true,
             author: {
               select: {
+                id: true,
                 displayName: true,
               },
             },
@@ -107,7 +108,12 @@ function PostCard({ post }: Readonly<{ post: FeedPost }>) {
   return (
     <article className="border-border bg-surface rounded-lg border p-5">
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <span className="font-semibold">{post.author.displayName}</span>
+        <Link
+          className="font-semibold hover:underline"
+          href={`/users/${post.author.id}`}
+        >
+          {post.author.displayName}
+        </Link>
         <time className="text-muted" dateTime={post.createdAt.toISOString()}>
           {formatDate(post.createdAt)}
         </time>

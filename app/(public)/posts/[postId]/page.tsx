@@ -45,6 +45,7 @@ async function getPost(postId: string) {
       updatedAt: true,
       author: {
         select: {
+          id: true,
           displayName: true,
         },
       },
@@ -75,6 +76,7 @@ async function getPost(postId: string) {
           createdAt: true,
           author: {
             select: {
+              id: true,
               displayName: true,
             },
           },
@@ -145,9 +147,12 @@ function ReplyList({ replies }: Readonly<{ replies: PostReply[] }>) {
           {replies.map((reply) => (
             <li className="space-y-3" key={reply.id}>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <span className="font-semibold">
+                <Link
+                  className="font-semibold hover:underline"
+                  href={`/users/${reply.author.id}`}
+                >
                   {reply.author.displayName}
-                </span>
+                </Link>
                 <time
                   className="text-muted"
                   dateTime={reply.createdAt.toISOString()}
@@ -187,7 +192,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
       <header className="border-border bg-surface rounded-lg border p-6">
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="font-semibold">{post.author.displayName}</span>
+          <Link
+            className="font-semibold hover:underline"
+            href={`/users/${post.author.id}`}
+          >
+            {post.author.displayName}
+          </Link>
           <time className="text-muted" dateTime={post.createdAt.toISOString()}>
             {formatDate(post.createdAt)}
           </time>
