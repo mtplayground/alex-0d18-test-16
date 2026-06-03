@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ReplyForm } from "@/components/posts/reply-form";
@@ -30,6 +31,35 @@ function formatBytes(sizeBytes: number) {
   }
 
   return `${(sizeBytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function getDescription(body: string, maxLength = 160) {
+  const normalized = body.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength).trim()}...`;
+}
+
+async function getPostMetadata(postId: string) {
+  return prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+    select: {
+      id: true,
+      title: true,
+      body: true,
+      createdAt: true,
+      author: {
+        select: {
+          displayName: true,
+        },
+      },
+    },
+  });
 }
 
 async function getPost(postId: string) {
@@ -84,6 +114,48 @@ async function getPost(postId: string) {
       },
     },
   });
+}
+
+export async function generateMetadata({
+  params,
+}: PostDetailPageProps): Promise<Metadata> {
+  const { postId } = await params;
+  const post = await getPostMetadata(postId);
+
+  if (!post) {
+    return {
+      title: "Post not found",
+      description: "The requested post could not be found.",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const description = getDescription(post.body);
+  const url = `/posts/${post.id}`;
+
+  return {
+    title: post.title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      url,
+      publishedTime: post.createdAt.toISOString(),
+      authors: [post.author.displayName],
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description,
+    },
+  };
 }
 
 async function getAttachmentDownloadUrl(attachment: PostAttachment) {

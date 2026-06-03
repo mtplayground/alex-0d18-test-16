@@ -1,8 +1,31 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+const feedDescription =
+  "Browse the latest posts in reverse chronological order.";
+
+export const metadata: Metadata = {
+  title: "Posts",
+  description: feedDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Posts",
+    description: feedDescription,
+    type: "website",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: "Posts",
+    description: feedDescription,
+  },
+};
 
 const feedPageSize = 10;
 
