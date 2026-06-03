@@ -16,6 +16,7 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   posts            Post[]
+  replies          Reply[]
 
   @@map("users")
 }
@@ -29,10 +30,26 @@ model Post {
   updatedAt   DateTime     @updatedAt
   author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   attachments Attachment[]
+  replies     Reply[]
 
   @@index([authorId])
   @@index([createdAt])
   @@map("posts")
+}
+
+model Reply {
+  id        String   @id @default(cuid())
+  body      String
+  authorId  String
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([postId, createdAt])
+  @@map("replies")
 }
 
 model Attachment {
