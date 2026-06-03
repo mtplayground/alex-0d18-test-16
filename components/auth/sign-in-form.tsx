@@ -9,12 +9,16 @@ type SignInFieldErrors = Partial<{
   password: string;
 }>;
 
+type SignInFormProps = Readonly<{
+  callbackUrl?: string;
+}>;
+
 function getStringField(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
-export function SignInForm() {
+export function SignInForm({ callbackUrl = "/" }: SignInFormProps) {
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<SignInFieldErrors>({});
   const [formError, setFormError] = useState<string>();
@@ -57,7 +61,7 @@ export function SignInForm() {
         return;
       }
 
-      router.replace("/");
+      router.replace(callbackUrl);
       router.refresh();
     } catch {
       setFormError("Unable to sign in. Try again.");
