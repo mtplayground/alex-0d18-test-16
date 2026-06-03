@@ -5,7 +5,7 @@ import { SignUpForm } from "@/components/auth/sign-up-form";
 export default function SignUpPage() {
   return (
     <section
-      className="border-border bg-surface w-full max-w-md rounded-lg border p-8"
+      className="border-border bg-surface mx-auto w-full max-w-md rounded-lg border p-8"
       aria-labelledby="sign-up-title"
     >
       <div className="mb-6">
