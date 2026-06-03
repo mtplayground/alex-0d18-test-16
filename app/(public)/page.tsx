@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <section
@@ -15,6 +17,12 @@ export default function HomePage() {
         The TypeScript application foundation is ready for the feature issues
         that follow.
       </p>
+      <Link
+        className="bg-foreground text-surface mt-6 inline-flex rounded-md px-4 py-2 text-sm font-semibold"
+        href="/sign-up"
+      >
+        Create account
+      </Link>
     </section>
   );
 }
