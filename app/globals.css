@@ -12,6 +12,10 @@
   color-scheme: light;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   background: var(--color-background);
