@@ -5,25 +5,15 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteObject, uploadObject } from "@/lib/storage";
+import {
+  getUploadLimitMegabytes,
+  isAllowedUploadContentType,
+  isUploadPurpose,
+  type UploadPurpose,
+  uploadLimits,
+} from "@/lib/upload-validation";
 
 export const runtime = "nodejs";
-
-const uploadPurposes = ["avatar", "document"] as const;
-
-type UploadPurpose = (typeof uploadPurposes)[number];
-
-const avatarContentTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const documentContentTypes = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "text/plain",
-]);
-
-const uploadLimits: Record<UploadPurpose, number> = {
-  avatar: 2 * 1024 * 1024,
-  document: 10 * 1024 * 1024,
-};
 
 function jsonError(message: string, status: number) {
   return NextResponse.json(
@@ -34,22 +24,6 @@ function jsonError(message: string, status: number) {
       status,
     }
   );
-}
-
-function isUploadPurpose(
-  value: FormDataEntryValue | null
-): value is UploadPurpose {
-  return (
-    typeof value === "string" && uploadPurposes.includes(value as UploadPurpose)
-  );
-}
-
-function isAllowedContentType(purpose: UploadPurpose, contentType: string) {
-  if (purpose === "avatar") {
-    return avatarContentTypes.has(contentType);
-  }
-
-  return documentContentTypes.has(contentType);
 }
 
 function sanitizeFileName(fileName: string) {
@@ -96,12 +70,12 @@ export async function POST(request: Request) {
 
   if (file.size > uploadLimits[purpose]) {
     return jsonError(
-      `File exceeds the ${Math.floor(uploadLimits[purpose] / 1024 / 1024)} MB limit.`,
+      `File exceeds the ${getUploadLimitMegabytes(purpose)} MB limit.`,
       400
     );
   }
 
-  if (!isAllowedContentType(purpose, file.type)) {
+  if (!isAllowedUploadContentType(purpose, file.type)) {
     return jsonError("File type is not allowed for this upload purpose.", 400);
   }
 
