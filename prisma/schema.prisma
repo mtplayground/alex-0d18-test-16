@@ -15,8 +15,24 @@ model User {
   avatarStorageKey String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  posts            Post[]
 
   @@map("users")
+}
+
+model Post {
+  id          String       @id @default(cuid())
+  title       String
+  body        String
+  authorId    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("posts")
 }
 
 model Attachment {
@@ -27,6 +43,7 @@ model Attachment {
   storageKey  String   @unique
   postId      String?
   createdAt   DateTime @default(now())
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
 
   @@index([postId])
   @@map("attachments")
