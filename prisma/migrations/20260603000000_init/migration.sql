@@ -1,0 +1,1 @@
+-- Initial empty PostgreSQL schema managed by Prisma migrations.
