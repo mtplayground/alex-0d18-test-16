@@ -40,7 +40,18 @@ const authEnvSchema = envSchema.pick({
   AUTH_SECRET: true,
 });
 
+const storageEnvSchema = envSchema.pick({
+  S3_ENDPOINT: true,
+  S3_REGION: true,
+  S3_BUCKET: true,
+  S3_ACCESS_KEY_ID: true,
+  S3_SECRET_ACCESS_KEY: true,
+  S3_FORCE_PATH_STYLE: true,
+  S3_PUBLIC_BASE_URL: true,
+});
+
 export type AppEnv = z.infer<typeof envSchema>;
+export type StorageEnv = z.infer<typeof storageEnvSchema>;
 
 function formatEnvError(error: z.ZodError) {
   return error.issues
@@ -82,4 +93,16 @@ export function getAuthSecret(source: NodeJS.ProcessEnv = process.env) {
   }
 
   return parsed.data.AUTH_SECRET;
+}
+
+export function getStorageConfig(source: NodeJS.ProcessEnv = process.env) {
+  const parsed = storageEnvSchema.safeParse(source);
+
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid object storage configuration: ${formatEnvError(parsed.error)}`
+    );
+  }
+
+  return parsed.data;
 }
