@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { ReplyForm } from "@/components/posts/reply-form";
 import { prisma } from "@/lib/prisma";
+import { getAbsoluteUrl } from "@/lib/site-url";
 import { createPresignedGetUrl } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,47 @@ function getDescription(body: string, maxLength = 160) {
   }
 
   return `${normalized.slice(0, maxLength).trim()}...`;
+}
+
+function stringifyJsonLd(value: unknown) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+function getPostJsonLd(post: PostDetail) {
+  const postUrl = getAbsoluteUrl(`/posts/${post.id}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    "@id": `${postUrl}#post`,
+    headline: post.title,
+    text: post.body,
+    datePublished: post.createdAt.toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    url: postUrl,
+    mainEntityOfPage: postUrl,
+    author: {
+      "@type": "Person",
+      name: post.author.displayName,
+      url: getAbsoluteUrl(`/users/${post.author.id}`),
+    },
+    commentCount: post.replies.length,
+    comment: post.replies.map((reply) => ({
+      "@type": "Comment",
+      text: reply.body,
+      datePublished: reply.createdAt.toISOString(),
+      author: {
+        "@type": "Person",
+        name: reply.author.displayName,
+        url: getAbsoluteUrl(`/users/${reply.author.id}`),
+      },
+    })),
+  };
 }
 
 async function getPostMetadata(postId: string) {
@@ -252,9 +294,17 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   const attachments = await getDownloadableAttachments(post.attachments);
+  const jsonLd = getPostJsonLd(post);
 
   return (
     <article className="space-y-6" aria-labelledby="post-title">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: stringifyJsonLd(jsonLd),
+        }}
+      />
+
       <Link
         className="text-muted inline-flex text-sm font-semibold hover:underline"
         href="/"
