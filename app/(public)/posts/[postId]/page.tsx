@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ReplyForm } from "@/components/posts/reply-form";
 import { prisma } from "@/lib/prisma";
 import { createPresignedGetUrl } from "@/lib/storage";
 
@@ -244,6 +245,18 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       ) : null}
 
       <ReplyList replies={post.replies} />
+
+      <section
+        className="border-border bg-surface rounded-lg border p-6"
+        aria-labelledby="reply-form-title"
+      >
+        <h2 id="reply-form-title" className="text-xl font-bold">
+          Add a reply
+        </h2>
+        <div className="mt-4">
+          <ReplyForm postId={post.id} />
+        </div>
+      </section>
     </article>
   );
 }
