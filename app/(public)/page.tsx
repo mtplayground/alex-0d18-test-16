@@ -203,6 +203,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <p className="text-muted text-sm">
           {totalPosts} {totalPosts === 1 ? "post" : "posts"}
         </p>
+        <Link
+          className="bg-foreground text-surface rounded-md px-4 py-2 text-sm font-semibold"
+          href="/posts/new"
+        >
+          New post
+        </Link>
       </div>
 
       {posts.length > 0 ? (
