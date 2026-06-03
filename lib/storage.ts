@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -102,6 +103,17 @@ export async function uploadObject(input: UploadObjectInput) {
     key,
     url: getObjectUrl(key),
   };
+}
+
+export async function deleteObject(key: string) {
+  const config = getStorageConfig();
+
+  await getStorageClient().send(
+    new DeleteObjectCommand({
+      Bucket: config.S3_BUCKET,
+      Key: normalizeStorageKey(key),
+    })
+  );
 }
 
 export async function getObject(key: string): Promise<StoredObject> {
