@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteObject, uploadObject } from "@/lib/storage";
+import { deleteObject, getObjectUrl, uploadObject } from "@/lib/storage";
 import {
   getUploadLimitMegabytes,
   isAllowedUploadContentType,
@@ -44,6 +44,46 @@ function getStorageKey(
   return `${purpose}s/${userId}/${randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+async function createMockUploadResponse({
+  file,
+  purpose,
+  storageKey,
+}: {
+  file: File;
+  purpose: UploadPurpose;
+  storageKey: string;
+}) {
+  const attachment = await prisma.attachment.create({
+    data: {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+      storageKey,
+    },
+    select: {
+      id: true,
+      fileName: true,
+      contentType: true,
+      sizeBytes: true,
+      storageKey: true,
+      createdAt: true,
+    },
+  });
+
+  return NextResponse.json(
+    {
+      attachment: {
+        ...attachment,
+        purpose,
+        url: getObjectUrl(storageKey),
+      },
+    },
+    {
+      status: 201,
+    }
+  );
+}
+
 export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -80,6 +120,15 @@ export async function POST(request: Request) {
   }
 
   const storageKey = getStorageKey(purpose, userId, file.name);
+
+  if (process.env.E2E_UPLOAD_MOCK === "true") {
+    return createMockUploadResponse({
+      file,
+      purpose,
+      storageKey,
+    });
+  }
+
   let uploadedKey: string | undefined;
 
   try {
