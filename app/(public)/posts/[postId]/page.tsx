@@ -14,6 +14,7 @@ type PostDetailPageProps = Readonly<{
 
 type PostDetail = NonNullable<Awaited<ReturnType<typeof getPost>>>;
 type PostAttachment = PostDetail["attachments"][number];
+type PostReply = PostDetail["replies"][number];
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en", {
@@ -58,6 +59,26 @@ async function getPost(postId: string) {
           storageKey: true,
         },
       },
+      replies: {
+        orderBy: [
+          {
+            createdAt: "asc",
+          },
+          {
+            id: "asc",
+          },
+        ],
+        select: {
+          id: true,
+          body: true,
+          createdAt: true,
+          author: {
+            select: {
+              displayName: true,
+            },
+          },
+        },
+      },
     },
   });
 }
@@ -100,6 +121,47 @@ function BodyContent({ body }: Readonly<{ body: string }>) {
         );
       })}
     </div>
+  );
+}
+
+function ReplyList({ replies }: Readonly<{ replies: PostReply[] }>) {
+  return (
+    <section
+      className="border-border bg-surface rounded-lg border p-6"
+      aria-labelledby="replies-title"
+    >
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 id="replies-title" className="text-xl font-bold">
+          Replies
+        </h2>
+        <p className="text-muted text-sm">
+          {replies.length} {replies.length === 1 ? "reply" : "replies"}
+        </p>
+      </div>
+
+      {replies.length > 0 ? (
+        <ol className="border-border mt-4 space-y-4 border-t pt-4">
+          {replies.map((reply) => (
+            <li className="space-y-3" key={reply.id}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span className="font-semibold">
+                  {reply.author.displayName}
+                </span>
+                <time
+                  className="text-muted"
+                  dateTime={reply.createdAt.toISOString()}
+                >
+                  {formatDate(reply.createdAt)}
+                </time>
+              </div>
+              <BodyContent body={reply.body} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="text-muted mt-4">No replies yet.</p>
+      )}
+    </section>
   );
 }
 
@@ -180,6 +242,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           </ul>
         </section>
       ) : null}
+
+      <ReplyList replies={post.replies} />
     </article>
   );
 }
