@@ -17,12 +17,20 @@ export default function HomePage() {
         The TypeScript application foundation is ready for the feature issues
         that follow.
       </p>
-      <Link
-        className="bg-foreground text-surface mt-6 inline-flex rounded-md px-4 py-2 text-sm font-semibold"
-        href="/sign-up"
-      >
-        Create account
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link
+          className="bg-foreground text-surface inline-flex rounded-md px-4 py-2 text-sm font-semibold"
+          href="/sign-up"
+        >
+          Create account
+        </Link>
+        <Link
+          className="border-border text-foreground inline-flex rounded-md border px-4 py-2 text-sm font-semibold"
+          href="/sign-in"
+        >
+          Sign in
+        </Link>
+      </div>
     </section>
   );
 }
