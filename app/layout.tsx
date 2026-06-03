@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { getSiteUrl } from "@/lib/site-url";
+
 import "./globals.css";
 
-const metadataBase = new URL(process.env.AUTH_URL ?? "http://localhost:8080");
 const defaultDescription = "A self-hosted social posting application.";
 
 export const metadata: Metadata = {
-  metadataBase,
+  metadataBase: getSiteUrl(),
   title: {
     default: "Home",
     template: "%s",
