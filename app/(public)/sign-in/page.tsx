@@ -1,26 +1,26 @@
 import Link from "next/link";
 
-import { SignUpForm } from "@/components/auth/sign-up-form";
+import { SignInForm } from "@/components/auth/sign-in-form";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   return (
     <section
       className="border-border bg-surface w-full max-w-md rounded-lg border p-8"
-      aria-labelledby="sign-up-title"
+      aria-labelledby="sign-in-title"
     >
       <div className="mb-6">
-        <h1 id="sign-up-title" className="text-3xl font-bold">
-          Create account
+        <h1 id="sign-in-title" className="text-3xl font-bold">
+          Sign in
         </h1>
       </div>
-      <SignUpForm />
+      <SignInForm />
       <p className="text-muted mt-6 text-sm">
-        Already have an account?{" "}
+        Need an account?{" "}
         <Link
           className="text-foreground font-semibold underline underline-offset-4"
-          href="/sign-in"
+          href="/sign-up"
         >
-          Sign in
+          Create one
         </Link>
       </p>
     </section>
