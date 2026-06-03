@@ -27,7 +27,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <section
-      className="border-border bg-surface w-full max-w-md rounded-lg border p-8"
+      className="border-border bg-surface mx-auto w-full max-w-md rounded-lg border p-8"
       aria-labelledby="sign-in-title"
     >
       <div className="mb-6">
